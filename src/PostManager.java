@@ -19,8 +19,16 @@ public class PostManager {
 
     // 1. CREATE
     public void addPost(Post post) {
+        if (findPostById(post.getId()) != null) {
+            System.out.println("❌ ОШИБКА: Пост с ID " + post.getId() + " уже существует!");
+            System.out.println("Пожалуйста, используйте уникальный номер.");
+            return; // Выходим из метода, не добавляя пост в список
+        }
+
+        // Если проверка прошла успешно:
         posts.add(post);
         saveToFile();
+        System.out.println("✅ Пост успешно добавлен и сохранен!");
     }
 
     // 2. READ

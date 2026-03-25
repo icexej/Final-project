@@ -1,11 +1,9 @@
 public class StoryPost extends Post {
     private boolean isCloseFriendsOnly;
-    private String link;
 
-    public StoryPost(int id, String content, String scheduledDate, String platform, boolean isCloseFriendsOnly, String link) {
+    public StoryPost(int id, String content, String scheduledDate, String platform, boolean isCloseFriendsOnly) {
         super(id, content, scheduledDate, platform);
         this.isCloseFriendsOnly = isCloseFriendsOnly;
-        this.link = link;
     }
 
     public boolean isCloseFriendsOnly() { return isCloseFriendsOnly; }
@@ -21,7 +19,6 @@ public class StoryPost extends Post {
         System.out.println("Platform: " + getPlatform());
         System.out.println("Visibility: " + visibility);
         System.out.println("Text/Sticker: " + getContent());
-        System.out.println("Link: " + link);
         System.out.println("---------------------------");
     }
 }
