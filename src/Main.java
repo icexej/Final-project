@@ -1,221 +1,213 @@
-import java.util.Scanner;
+import javax.swing.*;
+import java.awt.*;
+import java.util.List;
 
 public class Main {
+    private static PostManager manager = new PostManager();
+    private static User currentUser = null;
+    private static JTextArea displayArea = new JTextArea(15, 50);
+
     public static void main(String[] args) {
-        PostManager manager = new PostManager();
         manager.loadFromFile();
-        Scanner scanner = new Scanner(System.in);
-
-        while (true) {
-            User currentUser = null;
-
-            System.out.println("\n========================================");
-            System.out.println("   ДОБРО ПОЖАЛОВАТЬ В SOCIAL SCHEDULER   ");
-            System.out.println("========================================");
-
-            // --- СИСТЕМА ВХОДА ---
-            while (currentUser == null) {
-                System.out.println("\nВыберите тип входа:");
-                System.out.println("1. Администратор (Пароль)");
-                System.out.println("2. Гость (Свободный вход)");
-                System.out.println("0. Завершить программу");
-                System.out.print("Ваш выбор: ");
-
-                String loginChoice = scanner.nextLine();
-
-                if (loginChoice.equals("1")) {
-                    System.out.print("Введите пароль: ");
-                    if (scanner.nextLine().equals("2404")) {
-                        currentUser = new User("Admin", "2404", "ADMIN");
-                        System.out.println("✅ Доступ разрешен.");
-                    } else {
-                        System.out.println("❌ Неверный пароль!");
-                    }
-                } else if (loginChoice.equals("2")) {
-                    System.out.print("Введите ваш никнейм: ");
-                    String name = scanner.nextLine();
-                    currentUser = new User(name.isEmpty() ? "Аноним" : name, "", "USER");
-                    System.out.println("ℹ️ Добро пожаловать, " + currentUser.getUsername() + "!");
-                } else if (loginChoice.equals("0")) {
-                    return;
-                }
-            }
-
-            // --- РАБОТА В АККАУНТЕ ---
-            boolean isRunning = true;
-            while (isRunning) {
-                try {
-                    System.out.println("\n--- МЕНЮ (" + currentUser.getUsername() + ") ---");
-                    System.out.println("1. Просмотр всех постов");
-                    System.out.println("2. Оставить комментарий");
-
-                    if (currentUser.getRole().equals("ADMIN")) {
-                        System.out.println("3. Создать Image Post");
-                        System.out.println("4. Создать Video Post");
-                        System.out.println("5. Создать Story Post");
-                        System.out.println("6. Удалить пост");
-                    }
-
-                    System.out.println("9. Сменить пользователя");
-                    System.out.println("0. Выход");
-                    System.out.print("Выбор: ");
-
-                    String choice = scanner.nextLine();
-
-                    switch (choice) {
-                        case "1":
-                            manager.showAllPosts();
-                            break;
-
-                        case "2":
-                            System.out.print("Введите ID поста: ");
-                            int idComm = Integer.parseInt(scanner.nextLine());
-                            Post found = manager.findPostById(idComm);
-                            if (found != null) {
-                                System.out.print("Ваш комментарий: ");
-                                found.addComment(currentUser.getUsername(), scanner.nextLine());
-                                manager.saveToFile();
-                                System.out.println("✅ Готово!");
-                            } else {
-                                System.out.println("❌ Пост не найден.");
-                            }
-                            break;
-
-                        case "3": // IMAGE POST
-                            int idI = readUniqueId(scanner, manager);
-                            System.out.print("Текст: "); String contI = scanner.nextLine();
-                            System.out.print("Дата: "); String dateI = readValidDate(scanner);
-                            System.out.print("Платформа: "); String platI = readPlatform(scanner);
-                            System.out.print("Путь к фото: "); String urlI = scanner.nextLine();
-                            manager.addPost(new ImagePost(idI, contI, dateI, platI, urlI));
-                            break;
-
-                        case "4": // VIDEO POST
-                            int idV = readUniqueId(scanner, manager);
-                            System.out.print("Текст: "); String contV = scanner.nextLine();
-                            System.out.print("Дата: "); String dateV = readValidDate(scanner);
-                            System.out.print("Платформа: "); String platV = readPlatform(scanner);
-                            System.out.print("Длительность (мин): "); double dur = Double.parseDouble(scanner.nextLine());
-                            manager.addPost(new VideoPost(idV, contV, dateV, platV, dur));
-                            break;
-
-                        case "5": // STORY POST
-                            int idS = readUniqueId(scanner, manager);
-                            System.out.print("Текст: "); String contS = scanner.nextLine();
-                            System.out.print("Дата: "); String dateS = readValidDate(scanner);
-                            System.out.print("Платформа: "); String platS = readPlatform(scanner);
-                            System.out.print("Для близких? (да/нет): "); boolean isClose = readYesNo(scanner);
-                            manager.addPost(new StoryPost(idS, contS, dateS, platS, isClose));
-                            break;
-
-                        case "6": // DELETE
-                            System.out.print("ID для удаления: ");
-                            manager.deletePost(Integer.parseInt(scanner.nextLine()));
-                            break;
-
-                        case "9":
-                            isRunning = false;
-                            break;
-
-                        case "0":
-                            return;
-
-                        default:
-                            System.out.println("❌ Ошибка.");
-                    }
-                } catch (Exception e) {
-                    System.out.println("⚠️ Ошибка ввода.");
-                }
-            }
-        }
+        showLoginDialog();
     }
 
-    // Твой метод проверки ID
-    private static int readUniqueId(Scanner scanner, PostManager manager) {
-        while (true) {
-            try {
-                System.out.print("Введите уникальный ID: ");
-                int id = Integer.parseInt(scanner.nextLine());
-                if (id <= 0) {
-                    System.out.println("⚠️ ID должен быть > 0");
-                    continue;
-                }
-                if (manager.findPostById(id) != null) {
-                    System.out.println("⚠️ ID уже занят!");
-                    continue;
-                }
-                return id;
-            } catch (NumberFormatException e) {
-                System.out.println("⚠️ Введите число!");
-            }
-        }
-    }
-    private static String readValidDate(Scanner scanner) {
-        while (true) {
-            System.out.print("Введите дату (дд.мм.гггг): ");
-            String date = scanner.nextLine();
+    // --- 1. СИСТЕМА ВХОДА ---
+    private static void showLoginDialog() {
+        String[] options = {"Администратор", "Гость", "Выйти"};
+        int choice = JOptionPane.showOptionDialog(null, "Добро пожаловать! Выберите тип входа:",
+                "Social Scheduler 2026", JOptionPane.DEFAULT_OPTION,
+                JOptionPane.INFORMATION_MESSAGE, null, options, options[0]);
 
-            // 1. Сначала проверяем общий формат через Regex (цифры.цифры.цифры)
-            if (!date.matches("\\d{2}\\.\\d{2}\\.\\d{4}")) {
-                System.out.println("❌ Ошибка: Формат должен быть дд.мм.гггг (например, 12.05.2024)");
-                continue;
-            }
-
-            try {
-                // 2. Разрезаем строку по точкам
-                String[] parts = date.split("\\.");
-                int day = Integer.parseInt(parts[0]);
-                int month = Integer.parseInt(parts[1]);
-                int year = Integer.parseInt(parts[2]);
-
-                // 3. Проверяем логику чисел
-                if (day < 1 || day > 31) {
-                    System.out.println("❌ Ошибка: День должен быть от 01 до 31!");
-                } else if (month < 1 || month > 12) {
-                    System.out.println("❌ Ошибка: Месяц должен быть от 01 до 12!");
-                } else if (year < 2000 || year > 2026) {
-                    System.out.println("❌ Ошибка: Год должен быть до 2026!");
-                } else {
-                    return date; // Если всё прошло, возвращаем дату
-                }
-            } catch (Exception e) {
-                System.out.println("❌ Ошибка: Некорректные числа в дате.");
-            }
-        }
-    }
-    private static String readPlatform(Scanner scanner) {
-        String[] platforms = {"Instagram", "Telegram", "TikTok", "Facebook", "Twitter (X)"};
-
-        while (true) {
-            System.out.println("Выберите платформу:");
-            for (int i = 0; i < platforms.length; i++) {
-                System.out.println((i + 1) + ". " + platforms[i]);
-            }
-            System.out.print("Ваш выбор (номер): ");
-
-            try {
-                int choice = Integer.parseInt(scanner.nextLine());
-                if (choice >= 1 && choice <= platforms.length) {
-                    return platforms[choice - 1]; // Возвращаем название по индексу
-                } else {
-                    System.out.println("❌ Ошибка: Выберите число от 1 до " + platforms.length);
-                }
-            } catch (NumberFormatException e) {
-                System.out.println("❌ Ошибка: Введите число!");
-            }
-        }
-    }
-    private static boolean readYesNo(Scanner scanner) {
-        while (true) {
-            String input = scanner.nextLine().trim().toLowerCase();
-
-            if (input.equals("да")) {
-                return true;
-            } else if (input.equals("нет")) {
-                return false;
+        if (choice == 0) { // Админ
+            String pass = JOptionPane.showInputDialog(null, "Введите пароль:", "Авторизация", JOptionPane.QUESTION_MESSAGE);
+            if ("2404".equals(pass)) {
+                currentUser = new User("Admin", "2404", "ADMIN");
+                createMainWindow();
             } else {
-                System.out.println("❌ Ошибка: Введите только 'да' или 'нет'!");
+                JOptionPane.showMessageDialog(null, "❌ Неверный пароль!", "Ошибка", JOptionPane.ERROR_MESSAGE);
+                showLoginDialog();
+            }
+        } else if (choice == 1) { // Гость
+            String name = JOptionPane.showInputDialog("Введите ваш никнейм:");
+            currentUser = new User(name == null || name.isEmpty() ? "Аноним" : name, "", "USER");
+            createMainWindow();
+        } else {
+            System.exit(0);
+        }
+    }
+
+    // --- 2. ГЛАВНОЕ ОКНО ПРОГРАММЫ ---
+    private static void createMainWindow() {
+        JFrame frame = new JFrame("Social Scheduler - Сессия: " + currentUser.getUsername());
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(800, 600);
+        frame.setLayout(new BorderLayout(10, 10));
+
+        // Текстовая область для вывода постов
+        displayArea.setEditable(false);
+        displayArea.setBackground(new Color(245, 245, 245));
+        displayArea.setFont(new Font("Monospaced", Font.PLAIN, 13));
+        JScrollPane scrollPane = new JScrollPane(displayArea);
+        frame.add(scrollPane, BorderLayout.CENTER);
+
+        // Боковая панель управления
+        JPanel sidePanel = new JPanel();
+        sidePanel.setLayout(new BoxLayout(sidePanel, BoxLayout.Y_AXIS));
+        sidePanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+        // Общие кнопки
+        JButton btnShow = new JButton("📱 Обновить список");
+        JButton btnComment = new JButton("💬 Комментировать");
+        JButton btnLogout = new JButton("🚪 Сменить профиль");
+
+        styleButton(btnShow); styleButton(btnComment); styleButton(btnLogout);
+
+        sidePanel.add(btnShow); sidePanel.add(Box.createVerticalStrut(10));
+        sidePanel.add(btnComment); sidePanel.add(Box.createVerticalStrut(10));
+
+        // Кнопки только для Админа
+        if ("ADMIN".equals(currentUser.getRole())) {
+            JButton btnImg = new JButton("🖼 Добавить Image Post");
+            JButton btnVid = new JButton("🎥 Добавить Video Post");
+            JButton btnSty = new JButton("✨ Добавить Story Post");
+            JButton btnDel = new JButton("🗑 Удалить пост");
+
+            styleButton(btnImg); styleButton(btnVid); styleButton(btnSty); styleButton(btnDel);
+
+            sidePanel.add(btnImg); sidePanel.add(Box.createVerticalStrut(10));
+            sidePanel.add(btnVid); sidePanel.add(Box.createVerticalStrut(10));
+            sidePanel.add(btnSty); sidePanel.add(Box.createVerticalStrut(10));
+            sidePanel.add(btnDel); sidePanel.add(Box.createVerticalStrut(10));
+
+            btnImg.addActionListener(e -> createImagePost());
+            btnVid.addActionListener(e -> createVideoPost());
+            btnSty.addActionListener(e -> createStoryPost());
+            btnDel.addActionListener(e -> deletePost());
+        }
+
+        sidePanel.add(Box.createVerticalGlue());
+        sidePanel.add(btnLogout);
+        frame.add(sidePanel, BorderLayout.EAST);
+
+        // Логика общих кнопок
+        btnShow.addActionListener(e -> refreshDisplay());
+        btnComment.addActionListener(e -> addComment());
+        btnLogout.addActionListener(e -> { frame.dispose(); showLoginDialog(); });
+
+        frame.setLocationRelativeTo(null);
+        frame.setVisible(true);
+        refreshDisplay();
+    }
+
+    // --- 3. ЛОГИКА ВАЛИДАЦИИ И СОЗДАНИЯ ---
+
+    private static void refreshDisplay() {
+        displayArea.setText("--- ТЕКУЩИЕ ПЛАНЫ ПОСТОВ ---\n\n");
+        List<Post> posts = manager.getAllPosts(); // Проверь, что в PostManager есть этот метод!
+        if (posts.isEmpty()) {
+            displayArea.append("Список пуст. Добавьте первый пост как администратор.");
+        } else {
+            for (Post p : posts) {
+                displayArea.append("🆔 ID: " + p.getId() + " | Платформа: " + p.getPlatform() + "\n");
+                displayArea.append("📅 Дата: " + p.getScheduledDate() + "\n");
+                displayArea.append("📝 Текст: " + p.getContent() + "\n");
+                if (p.getComments().isEmpty()) {
+                    displayArea.append("💬 Комментарии: нет\n");
+                } else {
+                    displayArea.append("💬 Комментарии:\n");
+                    for (String c : p.getComments()) displayArea.append("   - " + c + "\n");
+                }
+                displayArea.append("--------------------------------------------------\n");
             }
         }
+    }
+
+    private static int askValidId() {
+        while (true) {
+            String input = JOptionPane.showInputDialog("Введите уникальный ID (число):");
+            if (input == null) return -1;
+            try {
+                int id = Integer.parseInt(input);
+                if (id > 0 && manager.findPostById(id) == null) return id;
+                JOptionPane.showMessageDialog(null, "❌ ID должен быть уникальным и больше 0!");
+            } catch (Exception e) { JOptionPane.showMessageDialog(null, "❌ Введите число!"); }
+        }
+    }
+
+    private static String askValidDate() {
+        while (true) {
+            String date = JOptionPane.showInputDialog("Дата (дд.мм.гггг):");
+            if (date == null) return null;
+            if (date.matches("\\d{2}\\.\\d{2}\\.\\d{4}")) {
+                String[] p = date.split("\\.");
+                int d = Integer.parseInt(p[0]), m = Integer.parseInt(p[1]), y = Integer.parseInt(p[2]);
+                if (d >= 1 && d <= 31 && m >= 1 && m <= 12 && y >= 2000 && y <= 2026) return date;
+            }
+            JOptionPane.showMessageDialog(null, "❌ Ошибка! Формат дд.мм.гггг (год до 2026)");
+        }
+    }
+
+    private static String askPlatform() {
+        String[] plats = {"Instagram", "Telegram", "TikTok", "Facebook"};
+        int c = JOptionPane.showOptionDialog(null, "Выберите платформу:", "Платформа",
+                JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE, null, plats, plats[0]);
+        return (c >= 0) ? plats[c] : "Instagram";
+    }
+
+    private static void createImagePost() {
+        int id = askValidId(); if (id == -1) return;
+        String content = JOptionPane.showInputDialog("Текст поста:");
+        String date = askValidDate(); if (date == null) return;
+        String plat = askPlatform();
+        String url = JOptionPane.showInputDialog("Путь к фото (image path):");
+        manager.addPost(new ImagePost(id, content, date, plat, url));
+        refreshDisplay();
+    }
+
+    private static void createVideoPost() {
+        int id = askValidId(); if (id == -1) return;
+        String content = JOptionPane.showInputDialog("Текст видео:");
+        String date = askValidDate(); if (date == null) return;
+        String plat = askPlatform();
+        double dur = Double.parseDouble(JOptionPane.showInputDialog("Длительность (мин):"));
+        manager.addPost(new VideoPost(id, content, date, plat, dur));
+        refreshDisplay();
+    }
+
+    private static void createStoryPost() {
+        int id = askValidId(); if (id == -1) return;
+        String content = JOptionPane.showInputDialog("Текст сторис:");
+        String date = askValidDate(); if (date == null) return;String plat = askPlatform();
+        int rel = JOptionPane.showConfirmDialog(null, "Только для близких?", "Приватность", JOptionPane.YES_NO_OPTION);
+        manager.addPost(new StoryPost(id, content, date, plat, rel == JOptionPane.YES_OPTION));
+        refreshDisplay();
+    }
+
+    private static void addComment() {
+        String idStr = JOptionPane.showInputDialog("ID поста для комментария:");
+        if (idStr == null) return;
+        Post p = manager.findPostById(Integer.parseInt(idStr));
+        if (p != null) {
+            String comm = JOptionPane.showInputDialog("Ваш комментарий:");
+            if (comm != null) {
+                p.addComment(currentUser.getUsername(), comm);
+                manager.saveToFile();
+                refreshDisplay();
+            }
+        } else JOptionPane.showMessageDialog(null, "❌ Пост не найден.");
+    }
+
+    private static void deletePost() {
+        String idStr = JOptionPane.showInputDialog("Введите ID для удаления:");
+        if (idStr != null) {
+            manager.deletePost(Integer.parseInt(idStr));
+            refreshDisplay();
+        }
+    }
+
+    private static void styleButton(JButton btn) {
+        btn.setMaximumSize(new Dimension(200, 40));
+        btn.setAlignmentX(Component.CENTER_ALIGNMENT);
     }
 }

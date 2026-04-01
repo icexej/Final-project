@@ -74,4 +74,7 @@ public class PostManager {
             System.out.println("Ошибка загрузки: " + e.getMessage());
         }
     }
+    public List<Post> getAllPosts() {
+        return posts;
+    }
 }
