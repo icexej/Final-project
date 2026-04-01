@@ -9,9 +9,6 @@ public class StoryPost extends Post {
     public boolean isCloseFriendsOnly() { return isCloseFriendsOnly; }
     public void setCloseFriendsOnly(boolean closeFriendsOnly) { isCloseFriendsOnly = closeFriendsOnly; }
 
-    public String getLink() { return link; }
-    public void setLink(String link) { this.link = link; }
-
     @Override
     public void displayDetails() {
         String visibility = isCloseFriendsOnly ? "Close Friends ONLY" : "Everyone";

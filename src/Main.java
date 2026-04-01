@@ -84,8 +84,8 @@ public class Main {
                         case "3": // IMAGE POST
                             int idI = readUniqueId(scanner, manager);
                             System.out.print("Текст: "); String contI = scanner.nextLine();
-                            System.out.print("Дата: "); String dateI = scanner.nextLine();
-                            System.out.print("Платформа: "); String platI = scanner.nextLine();
+                            System.out.print("Дата: "); String dateI = readValidDate(scanner);
+                            System.out.print("Платформа: "); String platI = readPlatform(scanner);
                             System.out.print("Путь к фото: "); String urlI = scanner.nextLine();
                             manager.addPost(new ImagePost(idI, contI, dateI, platI, urlI));
                             break;
@@ -93,8 +93,8 @@ public class Main {
                         case "4": // VIDEO POST
                             int idV = readUniqueId(scanner, manager);
                             System.out.print("Текст: "); String contV = scanner.nextLine();
-                            System.out.print("Дата: "); String dateV = scanner.nextLine();
-                            System.out.print("Платформа: "); String platV = scanner.nextLine();
+                            System.out.print("Дата: "); String dateV = readValidDate(scanner);
+                            System.out.print("Платформа: "); String platV = readPlatform(scanner);
                             System.out.print("Длительность (мин): "); double dur = Double.parseDouble(scanner.nextLine());
                             manager.addPost(new VideoPost(idV, contV, dateV, platV, dur));
                             break;
@@ -102,10 +102,10 @@ public class Main {
                         case "5": // STORY POST
                             int idS = readUniqueId(scanner, manager);
                             System.out.print("Текст: "); String contS = scanner.nextLine();
-                            System.out.print("Дата: "); String dateS = scanner.nextLine();
-                            System.out.print("Платформа: "); String platS = scanner.nextLine();
-                            System.out.print("Для близких? (true/false): "); boolean fr = Boolean.parseBoolean(scanner.nextLine());
-                            manager.addPost(new StoryPost(idS, contS, dateS, platS, fr));
+                            System.out.print("Дата: "); String dateS = readValidDate(scanner);
+                            System.out.print("Платформа: "); String platS = readPlatform(scanner);
+                            System.out.print("Для близких? (да/нет): "); boolean isClose = readYesNo(scanner);
+                            manager.addPost(new StoryPost(idS, contS, dateS, platS, isClose));
                             break;
 
                         case "6": // DELETE
@@ -147,6 +147,74 @@ public class Main {
                 return id;
             } catch (NumberFormatException e) {
                 System.out.println("⚠️ Введите число!");
+            }
+        }
+    }
+    private static String readValidDate(Scanner scanner) {
+        while (true) {
+            System.out.print("Введите дату (дд.мм.гггг): ");
+            String date = scanner.nextLine();
+
+            // 1. Сначала проверяем общий формат через Regex (цифры.цифры.цифры)
+            if (!date.matches("\\d{2}\\.\\d{2}\\.\\d{4}")) {
+                System.out.println("❌ Ошибка: Формат должен быть дд.мм.гггг (например, 12.05.2024)");
+                continue;
+            }
+
+            try {
+                // 2. Разрезаем строку по точкам
+                String[] parts = date.split("\\.");
+                int day = Integer.parseInt(parts[0]);
+                int month = Integer.parseInt(parts[1]);
+                int year = Integer.parseInt(parts[2]);
+
+                // 3. Проверяем логику чисел
+                if (day < 1 || day > 31) {
+                    System.out.println("❌ Ошибка: День должен быть от 01 до 31!");
+                } else if (month < 1 || month > 12) {
+                    System.out.println("❌ Ошибка: Месяц должен быть от 01 до 12!");
+                } else if (year < 2000 || year > 2026) {
+                    System.out.println("❌ Ошибка: Год должен быть до 2026!");
+                } else {
+                    return date; // Если всё прошло, возвращаем дату
+                }
+            } catch (Exception e) {
+                System.out.println("❌ Ошибка: Некорректные числа в дате.");
+            }
+        }
+    }
+    private static String readPlatform(Scanner scanner) {
+        String[] platforms = {"Instagram", "Telegram", "TikTok", "Facebook", "Twitter (X)"};
+
+        while (true) {
+            System.out.println("Выберите платформу:");
+            for (int i = 0; i < platforms.length; i++) {
+                System.out.println((i + 1) + ". " + platforms[i]);
+            }
+            System.out.print("Ваш выбор (номер): ");
+
+            try {
+                int choice = Integer.parseInt(scanner.nextLine());
+                if (choice >= 1 && choice <= platforms.length) {
+                    return platforms[choice - 1]; // Возвращаем название по индексу
+                } else {
+                    System.out.println("❌ Ошибка: Выберите число от 1 до " + platforms.length);
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("❌ Ошибка: Введите число!");
+            }
+        }
+    }
+    private static boolean readYesNo(Scanner scanner) {
+        while (true) {
+            String input = scanner.nextLine().trim().toLowerCase();
+
+            if (input.equals("да")) {
+                return true;
+            } else if (input.equals("нет")) {
+                return false;
+            } else {
+                System.out.println("❌ Ошибка: Введите только 'да' или 'нет'!");
             }
         }
     }
