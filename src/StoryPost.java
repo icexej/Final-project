@@ -7,7 +7,6 @@ public class StoryPost extends Post {
     }
 
     public boolean isCloseFriendsOnly() { return isCloseFriendsOnly; }
-    public void setCloseFriendsOnly(boolean closeFriendsOnly) { isCloseFriendsOnly = closeFriendsOnly; }
 
     @Override
     public void displayDetails() {

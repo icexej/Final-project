@@ -17,6 +17,16 @@ public class PostManager {
         return null; // Если пост не найден
     }
 
+    public int getNextId() {
+        int maxId = 0;
+        for (Post p : posts) {
+            if (p.getId() > maxId) {
+                maxId = p.getId();
+            }
+        }
+        return maxId + 1;
+    }
+
     // 1. CREATE
     public void addPost(Post post) {
         if (findPostById(post.getId()) != null) {
