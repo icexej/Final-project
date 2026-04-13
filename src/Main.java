@@ -14,30 +14,100 @@ public class Main {
     }
 
     // --- 1. ОКНО ВХОДА ---
+    private static void setAestheticUI() {
+        // Устанавливаем розовый цвет для всех стандартных окон
+        Color pastelPink = new Color(255, 240, 245);
+        UIManager.put("OptionPane.background", pastelPink);
+        UIManager.put("Panel.background", pastelPink);
+        UIManager.put("Button.background", new Color(255, 192, 203));
+        UIManager.put("Button.font", new Font("Comic Sans MS", Font.BOLD, 12));
+    }
+
     private static void showLoginDialog() {
-        UIManager.put("OptionPane.background", new Color(255, 240, 245));
-        UIManager.put("Panel.background", new Color(255, 240, 245));
+        setAestheticUI();
+        manager.loadUsersFromFile();
 
-        String[] options = {"Administrator", "Guest", "Exit"};
-        int choice = JOptionPane.showOptionDialog(null, "Welcome! Please log in:",
-                "Social Scheduler 2026", JOptionPane.DEFAULT_OPTION,
-                JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
+        while (true) {
+            String[] options = {"Administrator", "Login", "Register", "Exit"};
+            int choice = JOptionPane.showOptionDialog(null,
+                    "Welcome back! ✨\nPlease choose your entry type:",
+                    "Pink Scheduler Auth",
+                    JOptionPane.DEFAULT_OPTION,
+                    JOptionPane.PLAIN_MESSAGE,
+                    null, options, options[0]);
 
-        if (choice == 0) { // Admin
-            String pass = JOptionPane.showInputDialog(null, "Enter Password (2404):", "Auth", JOptionPane.QUESTION_MESSAGE);
-            if ("2404".equals(pass)) {
-                currentUser = new User("Admin", "2404", "ADMIN");
-                createMainWindow();
-            } else {
-                JOptionPane.showMessageDialog(null, "❌ Wrong password!", "Error", JOptionPane.ERROR_MESSAGE);
-                showLoginDialog();
+            if (choice == 0) { // ADMIN
+                while (true) {
+                    String pass = JOptionPane.showInputDialog(null, "Admin Access. Enter Password:", "Admin Auth", JOptionPane.QUESTION_MESSAGE);
+                    if (pass == null) break; // Вернуться к выбору иконок
+                    if ("2404".equals(pass)) {
+                        currentUser = new User("Admin", "2404", "ADMIN");
+                        createMainWindow();
+                        return;
+                    } else {
+                        JOptionPane.showMessageDialog(null, "❌ Incorrect Admin Password!", "Error", JOptionPane.ERROR_MESSAGE);
+                    }
+                }
             }
-        } else if (choice == 1) { // Guest
-            String name = JOptionPane.showInputDialog("Enter your nickname:");
-            currentUser = new User(name == null || name.isEmpty() ? "Guest" : name, "", "USER");
-            createMainWindow();
-        } else {
-            System.exit(0);
+            else if (choice == 1) { // LOGIN
+                while (true) {
+                    // 1. Спрашиваем только имя
+                    String name = JOptionPane.showInputDialog(null, "Username:", "Login", JOptionPane.QUESTION_MESSAGE);
+                    if (name == null) break;
+
+                    // 2. Строгая проверка ника (с учетом регистра)
+                    if (!manager.userExists(name)) {
+                        JOptionPane.showMessageDialog(null, "❌ User '" + name + "' does not exist!", "Error", JOptionPane.ERROR_MESSAGE);
+                        continue;
+                    }
+
+                    // 3. Если ник верный, просто просим пароль
+                    while (true) {
+                        String pass = JOptionPane.showInputDialog(null, "Password:", "Login", JOptionPane.QUESTION_MESSAGE);
+                        if (pass == null) break;
+
+                        User found = manager.loginUser(name, pass);
+                        if (found != null) {
+                            currentUser = found;
+                            createMainWindow();
+                            return;
+                        } else {
+                            JOptionPane.showMessageDialog(null, "❌ Incorrect password!", "Error", JOptionPane.ERROR_MESSAGE);
+                        }
+                    }
+                }
+            }
+            else if (choice == 2) { // REGISTER
+                while (true) {
+                    String name = JOptionPane.showInputDialog(null, "Choose a unique nickname:", "Registration", JOptionPane.QUESTION_MESSAGE);
+                    if (name == null) break;
+
+                    // Проверка на пустой ник и на уникальность
+                    boolean isTaken = false;
+                    for (User u : manager.getAllUsers()) { // Убедись, что в PostManager есть getAllUsers()
+                        if (u.getUsername().equals(name)) {
+                            isTaken = true;
+                            break;
+                        }
+                    }
+
+                    if (name.trim().isEmpty()) {
+                        JOptionPane.showMessageDialog(null, "❌ Nickname cannot be empty!");
+                    } else if (isTaken) {
+                        JOptionPane.showMessageDialog(null, "❌ This nickname is already taken! Try another one.");
+                    } else {
+                        String pass = JOptionPane.showInputDialog(null, "Create a password:", "Registration", JOptionPane.QUESTION_MESSAGE);
+                        if (pass != null && !pass.trim().isEmpty()) {
+                            manager.registerUser(new User(name, pass, "USER"));
+                            JOptionPane.showMessageDialog(null, "🎀 Success! Now you can login.");
+                            break; // Выход из регистрации к окну входа
+                        }
+                    }
+                }
+            }
+            else {
+                System.exit(0);
+            }
         }
     }
 

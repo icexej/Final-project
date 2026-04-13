@@ -8,9 +8,6 @@ public class ImagePost extends Post {
     @Override
     public void displayDetails() {
         System.out.println("[IMAGE POST #" + getId() + "]");
-        System.out.println("Platform: " + getPlatform());
-        System.out.println("Date: " + getScheduledDate());
-        System.out.println("Content: " + getContent());
         System.out.println("---------------------------");
     }
 }

@@ -12,9 +12,7 @@ public class StoryPost extends Post {
     public void displayDetails() {
         String visibility = isCloseFriendsOnly ? "Close Friends ONLY" : "Everyone";
         System.out.println("[STORY #" + getId() + "]");
-        System.out.println("Platform: " + getPlatform());
         System.out.println("Visibility: " + visibility);
-        System.out.println("Text/Sticker: " + getContent());
         System.out.println("---------------------------");
     }
 }

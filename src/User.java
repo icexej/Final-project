@@ -1,4 +1,7 @@
-public class User {
+import java.io.Serializable; // Не забудь импорт!
+
+public class User implements Serializable {
+
     private String username;
     private String password;
     private String role; // "ADMIN" или "USER"
@@ -12,7 +15,5 @@ public class User {
     public String getUsername() { return username; }
     public String getRole() { return role; }
 
-    public boolean checkPassword(String inputPassword) {
-        return this.password.equals(inputPassword);
-    }
+    public String getPassword() { return password; }
 }

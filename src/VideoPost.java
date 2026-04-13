@@ -10,20 +10,9 @@ public class VideoPost extends Post {
         return duration;
     }
 
-    public void setDuration(double duration) {
-        if (duration > 0) { //
-            this.duration = duration;
-        } else {
-            System.out.println("Error: Duration must be greater than 0!");
-        }
-    }
-    //Method
     @Override
     public void displayDetails() {
         System.out.println("[VIDEO POST #" + getId() + "]");
-        System.out.println("Platform: " + getPlatform());
-        System.out.println("Date: " + getScheduledDate());
-        System.out.println("Content: " + getContent());
         System.out.println("Duration: " + duration + " min");
         System.out.println("---------------------------");
     }
