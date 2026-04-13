@@ -1,9 +1,8 @@
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 
-public abstract class Post implements Serializable {
+public abstract class Post  {
     private int id;
     private String content;
     private String scheduledDate;
@@ -21,32 +20,22 @@ public abstract class Post implements Serializable {
     public int getId() { return id; }
 
     public String getContent() { return content; }
-    public void setContent(String content) { this.content = content; }
 
     public String getScheduledDate() { return scheduledDate; }
-    public void setScheduledDate(String scheduledDate) { this.scheduledDate = scheduledDate; }
 
     public String getPlatform() { return platform; }
-
-    public void addComment(String author, String text) {
-        if (text != null && !text.trim().isEmpty()) {
-            comments.add(author + ": " + text);
-        }
-    }
 
     public List<String> getComments() {
         return comments;
     }
 
-    public void printComments() {
-        if (comments.isEmpty()) {
-            System.out.println("   (Комментариев пока нет)");
-        } else {
-            System.out.println("   Комментарии:");
-            for (String c : comments) {
-                System.out.println("     - " + c);
-            }
-        }
+    public void addComment(String comment) {
+        this.comments.add(comment);
+    }
+    // В файле Post.java
+    public void addComment(String author, String text) {
+        // Мы склеиваем имя и текст в одну красивую строку
+        this.comments.add(author + ": " + text);
     }
 
     public abstract void displayDetails();
