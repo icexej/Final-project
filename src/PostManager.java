@@ -3,20 +3,22 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PostManager {
+    // Основной список всех постов
     private List<Post> posts = new ArrayList<>();
     private final String FILE_NAME = "posts.dat";
 
-    // Метод поиска (ВСТАВЛЯЕМ СЮДА)
-    // Нужен для того, чтобы найти пост по ID и добавить к нему комментарий
-    public Post findPostById(int id) {
-        for (Post p : posts) {
-            if (p.getId() == id) {
-                return p;
-            }
-        }
-        return null; // Если пост не найден
+    // 1. Метод для получения списка (используется в refreshDisplay)
+    public List<Post> getAllPosts() {
+        return posts;
     }
 
+    // 2. Добавление поста и автоматическое сохранение
+    public void addPost(Post post) {
+        posts.add(post);
+        saveToFile();
+    }
+
+    // 3. Автоматическая генерация следующего ID
     public int getNextId() {
         int maxId = 0;
         for (Post p : posts) {
@@ -27,50 +29,27 @@ public class PostManager {
         return maxId + 1;
     }
 
-    // 1. CREATE
-    public void addPost(Post post) {
-        if (findPostById(post.getId()) != null) {
-            System.out.println("❌ ОШИБКА: Пост с ID " + post.getId() + " уже существует!");
-            System.out.println("Пожалуйста, используйте уникальный номер.");
-            return; // Выходим из метода, не добавляя пост в список
-        }
-
-        // Если проверка прошла успешно:
-        posts.add(post);
-        saveToFile();
-        System.out.println("✅ Пост успешно добавлен и сохранен!");
-    }
-
-    // 2. READ
-    public void showAllPosts() {
-        if (posts.isEmpty()) {
-            System.out.println("Список пуст.");
-            return;
-        }
+    // 4. Поиск поста по ID (нужен для добавления комментариев)
+    public Post findPostById(int id) {
         for (Post p : posts) {
-            p.displayDetails(); // Вызывает метод наследника (Image, Video или Story)
-            p.printComments();  // Дополнительно выводит все комментарии к этому посту
-            System.out.println("---------------------------");
+            if (p.getId() == id) return p;
         }
+        return null;
     }
 
-    // 3. DELETE
+    // 5. Удаление поста
     public void deletePost(int id) {
-        if (posts.removeIf(p -> p.getId() == id)) {
-            saveToFile();
-            System.out.println("Пост #" + id + " удален.");
-        } else {
-            System.out.println("Пост не найден.");
-        }
+        posts.removeIf(p -> p.getId() == id);
+        saveToFile();
     }
 
-    // --- ФАЙЛОВАЯ СИСТЕМА (Requirement #4) ---
+    // --- РАБОТА С ФАЙЛАМИ (Serialization) ---
 
     public void saveToFile() {
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(FILE_NAME))) {
             oos.writeObject(posts);
         } catch (IOException e) {
-            System.out.println("Ошибка сохранения: " + e.getMessage());
+            System.err.println("Error saving to file: " + e.getMessage());
         }
     }
 
@@ -78,13 +57,11 @@ public class PostManager {
     public void loadFromFile() {
         File file = new File(FILE_NAME);
         if (!file.exists()) return;
+
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(FILE_NAME))) {
             posts = (List<Post>) ois.readObject();
         } catch (Exception e) {
-            System.out.println("Ошибка загрузки: " + e.getMessage());
+            System.err.println("Error loading from file: " + e.getMessage());
         }
-    }
-    public List<Post> getAllPosts() {
-        return posts;
     }
 }

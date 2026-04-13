@@ -2,9 +2,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-// Абстрактный класс — фундамент для всех типов постов
+
 public abstract class Post implements Serializable {
-    // Требование №8: Инкапсуляция (поля private)
     private int id;
     private String content;
     private String scheduledDate;
@@ -19,7 +18,6 @@ public abstract class Post implements Serializable {
         this.comments = new ArrayList<>(); // Инициализируем пустой список при создании
     }
 
-    // --- Геттеры и Сеттеры (Инкапсуляция) ---
     public int getId() { return id; }
 
     public String getContent() { return content; }
@@ -30,7 +28,6 @@ public abstract class Post implements Serializable {
 
     public String getPlatform() { return platform; }
 
-    // --- Логика комментариев (доступна и Админу, и Гостю) ---
     public void addComment(String author, String text) {
         if (text != null && !text.trim().isEmpty()) {
             comments.add(author + ": " + text);
@@ -41,7 +38,6 @@ public abstract class Post implements Serializable {
         return comments;
     }
 
-    // Вспомогательный метод для вывода комментариев на экран
     public void printComments() {
         if (comments.isEmpty()) {
             System.out.println("   (Комментариев пока нет)");
@@ -53,7 +49,5 @@ public abstract class Post implements Serializable {
         }
     }
 
-    // Требование №10: Полиморфизм (абстрактный метод)
-    // Каждый наследник (Video, Image, Story) реализует его по-своему
     public abstract void displayDetails();
 }
