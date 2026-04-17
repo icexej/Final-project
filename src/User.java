@@ -1,7 +1,7 @@
 public class User {
     private String username;
     private String password;
-    private String role; // "ADMIN" или "USER"
+    private String role; // "ADMIN" or "USER"
 
     // Конструктор
     public User(String username, String password, String role) {
@@ -10,7 +10,8 @@ public class User {
         this.role = role;
     }
 
-    // Геттеры (нужны для проверки входа и сохранения в файл)
+
+    // Getters
     public String getUsername() {
         return username;
     }
@@ -21,10 +22,5 @@ public class User {
 
     public String getRole() {
         return role;
-    }
-
-    // Сеттеры (если вдруг захочешь сменить пароль, но пока не обязательно)
-    public void setPassword(String password) {
-        this.password = password;
     }
 }

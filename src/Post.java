@@ -1,42 +1,26 @@
-import java.util.ArrayList;
-import java.util.List;
-
-
-public abstract class Post  {
+public class Post {
     private int id;
     private String content;
-    private String scheduledDate;
     private String platform;
-    private List<String> comments; // Список для хранения комментариев
+    private String author;
+    private String date; // Новое поле
+    private String type; // Новое поле
 
-    public Post(int id, String content, String scheduledDate, String platform) {
+    //Constructor
+    public Post(int id, String content, String platform, String author, String date, String type) {
         this.id = id;
         this.content = content;
-        this.scheduledDate = scheduledDate;
         this.platform = platform;
-        this.comments = new ArrayList<>(); // Инициализируем пустой список при создании
+        this.author = author;
+        this.date = date;
+        this.type = type;
     }
 
+    // Getters
     public int getId() { return id; }
-
     public String getContent() { return content; }
-
-    public String getScheduledDate() { return scheduledDate; }
-
     public String getPlatform() { return platform; }
-
-    public List<String> getComments() {
-        return comments;
-    }
-
-    public void addComment(String comment) {
-        this.comments.add(comment);
-    }
-    // В файле Post.java
-    public void addComment(String author, String text) {
-        // Мы склеиваем имя и текст в одну красивую строку
-        this.comments.add(author + ": " + text);
-    }
-
-    public abstract void displayDetails();
+    public String getAuthor() { return author; }
+    public String getDate() { return date; } // Теперь этот метод существует!
+    public String getType() { return type; } // И этот тоже!
 }

@@ -4,177 +4,127 @@ import java.awt.*;
 import java.util.List;
 
 public class Main {
+    public static Color buttonRose = new Color(255, 192, 203);
+    public static User currentUser = null;
     private static PostManager manager = new PostManager();
-    private static User currentUser = null;
     private static JTextArea displayArea = new JTextArea(15, 50);
 
-    public static void main(String[] args) {
-        manager.loadFromFile();
-        showLoginDialog();
-    }
-
-    // --- 1. ОКНО ВХОДА ---
     private static void setAestheticUI() {
-        // Устанавливаем розовый цвет для всех стандартных окон
         Color pastelPink = new Color(255, 240, 245);
         UIManager.put("OptionPane.background", pastelPink);
         UIManager.put("Panel.background", pastelPink);
-        UIManager.put("Button.background", new Color(255, 192, 203));
+        UIManager.put("Button.background", buttonRose);
         UIManager.put("Button.font", new Font("Comic Sans MS", Font.BOLD, 12));
     }
 
-    private static void showLoginDialog() {
+    public static void main(String[] args) {
         setAestheticUI();
-        manager.loadUsersFromFile();
+        SetupDatabase.createNewDatabase();
 
         while (true) {
-            String[] options = {"Administrator", "Login", "Register", "Exit"};
-            int choice = JOptionPane.showOptionDialog(null,
-                    "Welcome back! ✨\nPlease choose your entry type:",
-                    "Pink Scheduler Auth",
-                    JOptionPane.DEFAULT_OPTION,
-                    JOptionPane.PLAIN_MESSAGE,
-                    null, options, options[0]);
+            String[] options = {"Login", "Register", "Exit"};
+            int choice = JOptionPane.showOptionDialog(null, "Welcome to AIU Social Media!",
+                    "Main Menu", JOptionPane.DEFAULT_OPTION,
+                    JOptionPane.INFORMATION_MESSAGE, null, options, options[0]);
 
-            if (choice == 0) { // ADMIN
-                while (true) {
-                    String pass = JOptionPane.showInputDialog(null, "Admin Access. Enter Password:", "Admin Auth", JOptionPane.QUESTION_MESSAGE);
-                    if (pass == null) break; // Вернуться к выбору иконок
-                    if ("2404".equals(pass)) {
-                        currentUser = new User("Admin", "2404", "ADMIN");
-                        createMainWindow();
-                        return;
-                    } else {
-                        JOptionPane.showMessageDialog(null, "❌ Incorrect Admin Password!", "Error", JOptionPane.ERROR_MESSAGE);
-                    }
-                }
-            }
-            else if (choice == 1) { // LOGIN
-                while (true) {
-                    // 1. Спрашиваем только имя
-                    String name = JOptionPane.showInputDialog(null, "Username:", "Login", JOptionPane.QUESTION_MESSAGE);
-                    if (name == null) break;
-
-                    // 2. Строгая проверка ника (с учетом регистра)
-                    if (!manager.userExists(name)) {
-                        JOptionPane.showMessageDialog(null, "❌ User '" + name + "' does not exist!", "Error", JOptionPane.ERROR_MESSAGE);
-                        continue;
-                    }
-
-                    // 3. Если ник верный, просто просим пароль
-                    while (true) {
-                        String pass = JOptionPane.showInputDialog(null, "Password:", "Login", JOptionPane.QUESTION_MESSAGE);
-                        if (pass == null) break;
-
-                        User found = manager.loginUser(name, pass);
-                        if (found != null) {
-                            currentUser = found;
-                            createMainWindow();
-                            return;
-                        } else {
-                            JOptionPane.showMessageDialog(null, "❌ Incorrect password!", "Error", JOptionPane.ERROR_MESSAGE);
-                        }
-                    }
-                }
-            }
-            else if (choice == 2) { // REGISTER
-                while (true) {
-                    String name = JOptionPane.showInputDialog(null, "Choose a unique nickname:", "Registration", JOptionPane.QUESTION_MESSAGE);
-                    if (name == null) break;
-
-                    // Проверка на пустой ник и на уникальность
-                    boolean isTaken = false;
-                    for (User u : manager.getAllUsers()) { // Убедись, что в PostManager есть getAllUsers()
-                        if (u.getUsername().equals(name)) {
-                            isTaken = true;
-                            break;
-                        }
-                    }
-
-                    if (name.trim().isEmpty()) {
-                        JOptionPane.showMessageDialog(null, "❌ Nickname cannot be empty!");
-                    } else if (isTaken) {
-                        JOptionPane.showMessageDialog(null, "❌ This nickname is already taken! Try another one.");
-                    } else {
-                        String pass = JOptionPane.showInputDialog(null, "Create a password:", "Registration", JOptionPane.QUESTION_MESSAGE);
-                        if (pass != null && !pass.trim().isEmpty()) {
-                            manager.registerUser(new User(name, pass, "USER"));
-                            JOptionPane.showMessageDialog(null, "🎀 Success! Now you can login.");
-                            break; // Выход из регистрации к окну входа
-                        }
-                    }
-                }
-            }
-            else {
-                System.exit(0);
-            }
+            if (choice == 0 && handleLogin()) break;
+            if (choice == 1) showRegisterDialog();
+            if (choice == 2 || choice == -1) System.exit(0);
         }
+        createMainWindow();
     }
 
-    // --- 2. ГЛАВНОЕ ОКНО ---
+    private static boolean handleLogin() {
+        JTextField userField = new JTextField();
+        JPasswordField passField = new JPasswordField();
+        Object[] message = {"Username:", userField, "Password:", passField};
+
+        int option = JOptionPane.showConfirmDialog(null, message, "Login", JOptionPane.OK_CANCEL_OPTION);
+        if (option == JOptionPane.OK_OPTION) {
+            String name = userField.getText();
+            String pass = new String(passField.getPassword());
+            if (manager.login(name, pass)) {
+                JOptionPane.showMessageDialog(null, "Login successful! ✨");
+                return true;
+            }
+            JOptionPane.showMessageDialog(null, "Invalid username or password.");
+        }
+        return false;
+    }
+
     private static void createMainWindow() {
-        JFrame frame = new JFrame("🌸 Social Scheduler 2026 - " + currentUser.getUsername() + " 🌸");
+        if (currentUser == null) return;
+
+        JFrame frame = new JFrame("🌸 Social Scheduler 2026 | User: " + currentUser.getUsername());
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(850, 650);
+        frame.setSize(900, 700);
         frame.setLayout(new BorderLayout(15, 15));
 
-        // Палитра цветов
         Color pastelPink = new Color(255, 235, 245);
-        Color buttonRose = new Color(255, 192, 203);
         Color darkRose = new Color(219, 112, 147);
-
         frame.getContentPane().setBackground(pastelPink);
 
-        // Область вывода постов
-        displayArea.setEditable(false);
-        displayArea.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        displayArea.setBackground(Color.WHITE);
-        displayArea.setMargin(new Insets(10, 10, 10, 10));
+        // Header
+        JPanel headerPanel = new JPanel();
+        headerPanel.setBackground(darkRose);
+        JLabel welcomeLabel = new JLabel("Welcome back, " + currentUser.getUsername() + " (" + currentUser.getRole() + ") ✨");
+        welcomeLabel.setForeground(Color.WHITE);
+        welcomeLabel.setFont(new Font("Comic Sans MS", Font.BOLD, 16));
+        headerPanel.add(welcomeLabel);
+        frame.add(headerPanel, BorderLayout.NORTH);
 
+        // Display Area
+        displayArea.setEditable(false);
+        displayArea.setFont(new Font("Monospaced", Font.PLAIN, 13));
         JScrollPane scrollPane = new JScrollPane(displayArea);
-        TitledBorder border = BorderFactory.createTitledBorder(
+        scrollPane.setBorder(BorderFactory.createTitledBorder(
                 BorderFactory.createLineBorder(darkRose, 2), "Planned Posts",
-                TitledBorder.LEFT, TitledBorder.TOP, new Font("Comic Sans MS", Font.BOLD, 14), darkRose);
-        scrollPane.setBorder(border);
+                TitledBorder.LEFT, TitledBorder.TOP, new Font("Comic Sans MS", Font.BOLD, 14), darkRose));
         frame.add(scrollPane, BorderLayout.CENTER);
 
-        // Боковая панель управления
+        // Sidebar
         JPanel sidePanel = new JPanel();
         sidePanel.setLayout(new BoxLayout(sidePanel, BoxLayout.Y_AXIS));
         sidePanel.setBackground(pastelPink);
         sidePanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        // Кнопки
         JButton btnShow = new JButton(" Refresh List");
-        JButton btnComm = new JButton(" Add Comment");
         JButton btnLogout = new JButton(" Logout");
-
         styleButton(btnShow, buttonRose, Color.BLACK);
-        styleButton(btnComm, buttonRose, Color.BLACK);
         styleButton(btnLogout, new Color(255, 150, 150), Color.WHITE);
 
         sidePanel.add(btnShow); sidePanel.add(Box.createVerticalStrut(10));
-        sidePanel.add(btnComm); sidePanel.add(Box.createVerticalStrut(15));
 
-        // Админ-панель
-        if ("ADMIN".equals(currentUser.getRole())) {
-            JButton btnImg = new JButton(" Add Image Post");
-            JButton btnVid = new JButton(" Add Video Post");
-            JButton btnSty = new JButton(" Add Story Post");
-            JButton btnDel = new JButton(" Delete Post");styleButton(btnImg, buttonRose, Color.BLACK);
-            styleButton(btnVid, buttonRose, Color.BLACK);
-            styleButton(btnSty, buttonRose, Color.BLACK);
-            styleButton(btnDel, new Color(255, 200, 200), Color.DARK_GRAY);
+        JButton btnComment = new JButton("💬 Add Comment");
+        styleButton(btnComment, buttonRose, Color.BLACK);
+        btnComment.addActionListener(e -> {
+            String idStr = JOptionPane.showInputDialog("Enter Post ID to comment:");
+            if (idStr != null && !idStr.isEmpty()) {
+                try {
+                    int postId = Integer.parseInt(idStr);
+                    String text = JOptionPane.showInputDialog("Your comment:");
+                    if (text != null && !text.trim().isEmpty()) {
+                        manager.addComment(postId, currentUser.getUsername(), text);
+                        refreshDisplay(); // Сразу обновляем ленту, чтобы увидеть коммент
+                    }
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(null, "Invalid ID format.");
+                }
+            }
+        });
+        sidePanel.add(btnComment);
+        sidePanel.add(Box.createVerticalStrut(10));
 
-            sidePanel.add(btnImg); sidePanel.add(Box.createVerticalStrut(10));
-            sidePanel.add(btnVid); sidePanel.add(Box.createVerticalStrut(10));
-            sidePanel.add(btnSty); sidePanel.add(Box.createVerticalStrut(10));
-            sidePanel.add(btnDel); sidePanel.add(Box.createVerticalStrut(10));
 
-            btnImg.addActionListener(e -> createImagePost());
-            btnVid.addActionListener(e -> createVideoPost());
-            btnSty.addActionListener(e -> createStoryPost());
-            btnDel.addActionListener(e -> deletePost());
+        if ("Admin".equals(currentUser.getRole())) {
+            addAdminButton(sidePanel, "Add Image Post", "Image");
+            addAdminButton(sidePanel, "Add Video Post", "Video");
+            addAdminButton(sidePanel, "Add Story Post", "Story");
+
+            JButton btnDelete = new JButton("Delete Post");
+            styleButton(btnDelete, new Color(255, 150, 150), Color.WHITE);
+            btnDelete.addActionListener(e -> deletePost());
+            sidePanel.add(btnDelete);
         }
 
         sidePanel.add(Box.createVerticalGlue());
@@ -182,200 +132,119 @@ public class Main {
         frame.add(sidePanel, BorderLayout.EAST);
 
         btnShow.addActionListener(e -> refreshDisplay());
-        btnComm.addActionListener(e -> addComment());
-        btnLogout.addActionListener(e -> { frame.dispose(); showLoginDialog(); });
+        btnLogout.addActionListener(e -> { frame.dispose(); main(null); });
 
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
         refreshDisplay();
     }
 
-    // --- 3. ЛОГИКА ---
+    // Универсальный метод для кнопок админа (уменьшаем код)
+    private static void addAdminButton(JPanel panel, String label, String type) {
+        JButton btn = new JButton(label);
+        styleButton(btn, buttonRose, Color.BLACK);
+        btn.addActionListener(e -> createPost(type));
+        panel.add(btn);
+        panel.add(Box.createVerticalStrut(10));
+    }
+
     private static void refreshDisplay() {
         displayArea.setText("");
         List<Post> posts = manager.getAllPosts();
-
         if (posts.isEmpty()) {
             displayArea.append("\n  No posts scheduled yet.");
         } else {
             for (Post p : posts) {
-                int commentCount = p.getComments().size();
-
-                // Общая информация для всех постов
-                displayArea.append(" ID: " + p.getId() + " | Platform: " + p.getPlatform() + "\n");
-                displayArea.append(" Date: " + p.getScheduledDate() + "\n");
-                displayArea.append(" Text: " + p.getContent() + "\n");
-
-                // --- ВЫВОД СПЕЦИФИЧЕСКИХ ДАННЫХ ---
-                if (p instanceof VideoPost) {
-                    // Если это видео, выводим длительность
-                    VideoPost vp = (VideoPost) p;
-                    displayArea.append(" Type: Video Post | Duration: " + vp.getDuration() + " min\n");
+                displayArea.append("🆔 ID: " + p.getId() + " | 👤 Author: " + p.getAuthor() + "\n");
+                displayArea.append("📱 Platform: " + p.getPlatform() + " | 📅 Date: " + p.getDate() + " | 📂 Type: " + p.getType() + "\n");
+                displayArea.append("📝 Text: " + p.getContent() + "\n");
+                List<String> comments = manager.getCommentsForPost(p.getId());
+                for (String c : comments) {
+                    displayArea.append(c + "\n");
                 }
-                else if (p instanceof StoryPost) {
-                    // Если это сторис, выводим приватность
-                    StoryPost sp = (StoryPost) p;
-                    String privacy = sp.isCloseFriendsOnly() ? "Close Friends Only" : "Public";
-                    displayArea.append(" Type: Story Post | Privacy: " + privacy + "\n");
-                }
-                else if (p instanceof ImagePost) {
-                    // Если это фото
-                    displayArea.append(" Type: Image Post\n");
-                }
-
-                // Счетчик комментариев
-                displayArea.append(" Comments count: " + commentCount + "\n");
-
-                // Список комментариев (если есть)
-                if (commentCount > 0) {
-                    for (String c : p.getComments()) {
-                        displayArea.append("   - " + c + "\n");
-                    }
-                }
-                displayArea.append(" --------------------------------------------------\n");
+                displayArea.append("--------------------------------------------------\n");
             }
         }
     }
 
-    private static void createImagePost() {
-        // Теперь ID берется автоматически!
-        int id = manager.getNextId();
-
-        String content = JOptionPane.showInputDialog(null, "Enter post text:", "New Image Post", JOptionPane.QUESTION_MESSAGE);
-        if (content == null) return; // Если нажали Cancel
+    // Один метод для всех типов постов вместо трех разных
+    private static void createPost(String type) {
+        String content = JOptionPane.showInputDialog("Enter " + type.toLowerCase() + " text:");
+        if (content == null || content.trim().isEmpty()) return;
 
         String date = askDate();
         if (date == null) return;
 
         String plat = askPlat();
+        if (plat == null) return;
 
-        manager.addPost(new ImagePost(id, content, date, plat));
+        manager.addPost(content, plat, currentUser.getUsername(), date, type);
         refreshDisplay();
-
-        JOptionPane.showMessageDialog(null, "Post created with ID: " + id);
-    }
-
-    private static void createVideoPost() {
-        int id = manager.getNextId();
-
-        String content = JOptionPane.showInputDialog(null, "Enter video description:", "New Video Post", JOptionPane.QUESTION_MESSAGE);
-        if (content == null) return;
-
-        String date = askDate();
-        if (date == null) return;
-
-        String plat = askPlat();
-
-        try {
-            String durStr = JOptionPane.showInputDialog(null, "Enter duration (in minutes):", "Video Duration", JOptionPane.QUESTION_MESSAGE);
-            if (durStr == null) return;
-            double duration = Double.parseDouble(durStr);
-
-            manager.addPost(new VideoPost(id, content, date, plat, duration));
-            refreshDisplay();
-            JOptionPane.showMessageDialog(null, "Video Post created! ID: " + id);
-        } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(null, " Please enter a valid number for duration!");
-        }
-    }
-
-    private static void createStoryPost() {
-        int id = manager.getNextId();
-
-        String content = JOptionPane.showInputDialog(null, "Enter story text:", "New Story Post", JOptionPane.QUESTION_MESSAGE);
-        if (content == null) return;
-
-        String date = askDate();
-        if (date == null) return;
-
-        String plat = askPlat();
-
-        // Окно выбора: Yes = Close Friends, No = Public
-        int choice = JOptionPane.showConfirmDialog(null, "Is this for Close Friends only?", "Privacy Settings", JOptionPane.YES_NO_OPTION);
-        boolean isCloseFriends = (choice == JOptionPane.YES_OPTION);
-
-        manager.addPost(new StoryPost(id, content, date, plat, isCloseFriends));
-        refreshDisplay();
-        JOptionPane.showMessageDialog(null, "Story Post created! ID: " + id);
-    }
-
-    private static void addComment() {
-        String idStr = JOptionPane.showInputDialog("Post ID:");
-        if (idStr == null) return;
-        Post p = manager.findPostById(Integer.parseInt(idStr));
-        if (p != null) {
-            String comm = JOptionPane.showInputDialog("Comment text:");
-            if (comm != null) {
-                p.addComment(currentUser.getUsername(), comm);
-                manager.saveToFile();
-                refreshDisplay();
-            }
-        } else JOptionPane.showMessageDialog(null, "Not found!");
-    }
-
-    private static void deletePost() {
-        String idStr = JOptionPane.showInputDialog("ID to delete:");
-        if (idStr != null) {
-            manager.deletePost(Integer.parseInt(idStr));
-            refreshDisplay();
-        }
-    }
-
-    // --- ИСПРАВЛЕННЫЕ ХЕЛПЕРЫ ---
-
-    private static int askId() {
-        while (true) {
-            String s = JOptionPane.showInputDialog(null, "Enter Unique ID (Positive Number):", "ID Input", JOptionPane.QUESTION_MESSAGE);
-            if (s == null) return -1; // Если нажали Cancel, выходим в меню
-
-            try {
-                int id = Integer.parseInt(s);
-                if (id > 0 && manager.findPostById(id) == null) {
-                    return id;
-                } else {
-                    JOptionPane.showMessageDialog(null, " ID must be positive and unique!", "Error", JOptionPane.ERROR_MESSAGE);
-                }
-            } catch (Exception e) {
-                JOptionPane.showMessageDialog(null, " Please enter a valid number!", "Error", JOptionPane.ERROR_MESSAGE);
-            }
-        }
     }
 
     private static String askDate() {
+        String datePattern = "\\d{2}\\.\\d{2}\\.\\d{4}";
         while (true) {
-            String d = JOptionPane.showInputDialog(null, "Enter Date (dd.mm.yyyy):", "Date Input", JOptionPane.QUESTION_MESSAGE);
-            if (d == null) return null; // Если нажали Cancel, выходим в меню
-
-            // Регулярное выражение и проверка диапазона
-            if (d.matches("\\d{2}\\.\\d{2}\\.\\d{4}")) {
-                try {
-                    String[] parts = d.split("\\.");
-                    int day = Integer.parseInt(parts[0]);
-                    int month = Integer.parseInt(parts[1]);
-                    int year = Integer.parseInt(parts[2]);
-
-                    if (day >= 1 && day <= 31 && month >= 1 && month <= 12 && year >= 2000 && year <= 2026) {
-                        return d; // Дата верна
-                    }
-                } catch (Exception e) {}
-            }
-            JOptionPane.showMessageDialog(null, " Invalid format or date! Use dd.mm.yyyy (Year up to 2026)", "Error", JOptionPane.ERROR_MESSAGE);
+            String input = JOptionPane.showInputDialog(null, "Введите дату (ДД.ММ.ГГГГ):", "Планирование", JOptionPane.QUESTION_MESSAGE);
+            if (input == null) return null;
+            if (input.matches(datePattern)) return input;
+            JOptionPane.showMessageDialog(null, "Формат: ДД.ММ.ГГГГ", "Ошибка", JOptionPane.ERROR_MESSAGE);
         }
     }
 
     private static String askPlat() {
         String[] plats = {"Instagram", "Telegram", "TikTok"};
-        int c = JOptionPane.showOptionDialog(null, "Platform:", "Select", 0, 3, null, plats, plats[0]);
-        return (c >= 0) ? plats[c] : "Instagram";
+        int c = JOptionPane.showOptionDialog(null, "Выберите платформу:", "Select",
+                JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, plats, plats[0]);
+        return (c >= 0) ? plats[c] : null;
+    }
+
+    private static void deletePost() {
+        String idStr = JOptionPane.showInputDialog("Enter Post ID to delete:");
+        if (idStr != null) {
+            try {
+                manager.deletePost(Integer.parseInt(idStr));
+                refreshDisplay();
+            } catch (NumberFormatException e) {
+                JOptionPane.showMessageDialog(null, "Invalid ID format.");
+            }
+        }
     }
 
     private static void styleButton(JButton btn, Color bg, Color fg) {
-        btn.setMaximumSize(new Dimension(220, 45));
+        btn.setMaximumSize(new Dimension(200, 40));
         btn.setAlignmentX(Component.CENTER_ALIGNMENT);
         btn.setBackground(bg);
         btn.setForeground(fg);
         btn.setFocusPainted(false);
-        btn.setFont(new Font("Comic Sans MS", Font.BOLD, 13));
-        btn.setBorder(BorderFactory.createLineBorder(new Color(255, 105, 180), 1));
+    }
+
+    private static void showRegisterDialog() {
+        JTextField userField = new JTextField();
+        JPasswordField passField = new JPasswordField();
+        String[] roles = {"User", "Admin"};
+        JComboBox<String> roleBox = new JComboBox<>(roles);
+        JLabel secretLabel = new JLabel("Enter Secret Code:");
+        JTextField secretField = new JTextField();
+        secretLabel.setVisible(false); secretField.setVisible(false);
+
+        roleBox.addActionListener(e -> {
+            boolean isAdmin = roleBox.getSelectedItem().equals("Admin");
+            secretLabel.setVisible(isAdmin);
+            secretField.setVisible(isAdmin);
+            Window window = SwingUtilities.getWindowAncestor(roleBox);
+            if (window != null) window.pack();
+        });
+
+        Object[] message = {"Username:", userField, "Password:", passField, "Role:", roleBox, secretLabel, secretField};
+        if (JOptionPane.showConfirmDialog(null, message, "Register", JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION) {
+            String role = (String) roleBox.getSelectedItem();
+            if (role.equals("Admin") && !"777".equals(secretField.getText().trim())) {
+                JOptionPane.showMessageDialog(null, "Wrong secret code!");
+                return;
+            }
+            manager.registerUser(new User(userField.getText().trim(), new String(passField.getPassword()).trim(), role), secretField.getText().trim());
+            JOptionPane.showMessageDialog(null, "Account created! ✨");
+        }
     }
 }
