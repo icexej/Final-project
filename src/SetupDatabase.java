@@ -34,7 +34,7 @@ public class SetupDatabase {
             stmt.execute(sqlUsers);
             stmt.execute(sqlPosts);
             stmt.execute(sqlComments);
-            System.out.println("Database ready! ✨");
+            System.out.println("Database ready!");
 
         } catch (SQLException e) {
             System.out.println("DB Setup error: " + e.getMessage());

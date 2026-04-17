@@ -123,7 +123,7 @@ public class PostManager {
             while (rs.next()) {
                 comments.add("   💬 " + rs.getString("author") + ": " + rs.getString("text"));
             }
-        } catch (SQLException e) { /* ошибка */ }
+        } catch (SQLException e) { }
         return comments;
     }
 }

@@ -108,7 +108,7 @@ public class Main {
                         refreshDisplay(); // Сразу обновляем ленту, чтобы увидеть коммент
                     }
                 } catch (NumberFormatException ex) {
-                    JOptionPane.showMessageDialog(null, "Invalid ID format.");
+                    JOptionPane.showMessageDialog(null, "Invalid format.");
                 }
             }
         });

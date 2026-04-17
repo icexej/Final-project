@@ -6,7 +6,7 @@ public class Post {
     private String date; // Новое поле
     private String type; // Новое поле
 
-    //Constructor
+    //Constructo
     public Post(int id, String content, String platform, String author, String date, String type) {
         this.id = id;
         this.content = content;

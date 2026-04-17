@@ -1,7 +1,7 @@
 public class User {
     private String username;
     private String password;
-    private String role; // "ADMIN" or "USER"
+    private String role; // "ADMIN" orr "USER"
 
     // Конструктор
     public User(String username, String password, String role) {
