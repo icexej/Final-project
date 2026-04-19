@@ -207,16 +207,16 @@ public class Main {
     private static String askDate() {
         String datePattern = "\\d{2}\\.\\d{2}\\.\\d{4}";
         while (true) {
-            String input = JOptionPane.showInputDialog(null, "Введите дату (ДД.ММ.ГГГГ):", "Планирование", JOptionPane.QUESTION_MESSAGE);
+            String input = JOptionPane.showInputDialog(null, "Enter the date (DD.MM.YYYY):", "Planning", JOptionPane.QUESTION_MESSAGE);
             if (input == null) return null;
             if (input.matches(datePattern)) return input;
-            JOptionPane.showMessageDialog(null, "Формат: ДД.ММ.ГГГГ", "Ошибка", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, "Format: DD.MM.YYYY", "Wrong", JOptionPane.ERROR_MESSAGE);
         }
     }
 
     private static String askPlat() {
         String[] plats = {"Instagram", "Telegram", "TikTok"};
-        int c = JOptionPane.showOptionDialog(null, "Выберите платформу:", "Select",
+        int c = JOptionPane.showOptionDialog(null, "Choose a platform:", "Select",
                 JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, plats, plats[0]);
         return (c >= 0) ? plats[c] : null;
     }
