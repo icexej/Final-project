@@ -46,3 +46,29 @@ Export Algorithm: Line-by-line reading from the database and writing to a file s
 
 Challenges: One of the main tasks was to synchronize the ID between the database and the list in the GUI, which was solved through automatic Refresh after each operation.
 
+---
+
+## 📸 Screenshots & Proof of Work
+*The following screenshots demonstrate the core functionality of the application. System date and time are visible in the corner as required.*
+
+### 1. User Authentication (Login & Admin Access)
+![Login Screen](screenshots/login.png)
+
+### 2. Main Dashboard (ADMIN)
+![Main GUI](screenshots/admin.png)
+
+### 3. Main Dashboard (USER)
+![Main GUI](screenshots/user.png)
+
+### 4. CREATE
+![Creating Post](screenshots/create.png)
+
+### 5. EDIT
+![CSV Export](screenshots/edit.png)
+
+### 6. Database
+![CSV Export](screenshots/database.png)
+
+### 6. Database2
+![CSV Export](screenshots/database2.png)
+
