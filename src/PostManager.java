@@ -1,4 +1,6 @@
 import javax.swing.*;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,8 +44,8 @@ public class PostManager {
         }
     }
 
-    // --- РАБОТА С ПОСТАМИ ---
     public List<Post> getAllPosts() {
+
         List<Post> posts = new ArrayList<>();
         String sql = "SELECT * FROM posts";
         try (Connection conn = DriverManager.getConnection(URL);
@@ -51,20 +53,65 @@ public class PostManager {
              ResultSet rs = stmt.executeQuery(sql)) {
 
             while (rs.next()) {
-                posts.add(new Post(
-                        rs.getInt("id"),
-                        rs.getString("content"),
-                        rs.getString("platform"),
-                        rs.getString("author"),
-                        rs.getString("date"),
-                        rs.getString("type")
-                ));
+                int id = rs.getInt("id");
+                String content = rs.getString("content");
+                String platform = rs.getString("platform");
+                String author = rs.getString("author");
+                String date = rs.getString("date");
+                String type = rs.getString("type");
+
+                // Используем полиморфизм при создании объектов
+                if ("Video".equals(type)) posts.add(new VideoPost(id, content, platform, author, date, type));
+                else if ("Story".equals(type)) posts.add(new StoryPost(id, content, platform, author, date, type));
+                else posts.add(new ImagePost(id, content, platform, author, date, type));
             }
-        } catch (SQLException e) {
-            System.out.println("Read error: " + e.getMessage());
-        }
+        } catch (SQLException e) { e.printStackTrace(); }
         return posts;
     }
+
+    // UPDATE операция (для полного CRUD)
+    public void updatePost(int id, String newContent) {
+        String sql = "UPDATE posts SET content = ? WHERE id = ?";
+        try (Connection conn = DriverManager.getConnection(URL);
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, newContent);
+            pstmt.setInt(2, id);
+            pstmt.executeUpdate();
+        } catch (SQLException e) { e.printStackTrace(); }
+    }
+
+    public void exportToCSV() {
+        List<Post> posts = getAllPosts();
+        try (FileWriter writer = new FileWriter("social_data_export.csv")) {
+            writer.append("ID,Type,Author,Platform,Date,Content\n");
+            for (Post p : posts) {
+                writer.append(p.getId() + ",").append(p.getType() + ",").append(p.getAuthor() + ",")
+                        .append(p.getPlatform() + ",").append(p.getDate() + ",").append(p.getContent() + "\n");
+            }
+            javax.swing.JOptionPane.showMessageDialog(null, "Data exported to social_data_export.csv! ✅");
+        } catch (IOException e) { e.printStackTrace(); }
+    }
+
+
+    public void importFromCSV() {
+        String line;
+        try (java.io.BufferedReader br = new java.io.BufferedReader(new java.io.FileReader("social_data_export.csv"))) {
+            br.readLine(); // Пропускаем заголовок (ID, Type...)
+            int count = 0;
+            while ((line = br.readLine()) != null) {
+                String[] data = line.split(",");
+                if (data.length >= 6) {
+                    // data[5] - контент, data[3] - платформа, data[2] - автор, data[4] - дата, data[1] - тип
+                    addPost(data[5], data[3], data[2], data[4], data[1]);
+                    count++;
+                }
+            }
+            javax.swing.JOptionPane.showMessageDialog(null, "Successfully imported " + count + " posts! ✅");
+        } catch (java.io.IOException e) {
+            javax.swing.JOptionPane.showMessageDialog(null, "Import error: " + e.getMessage());
+        }
+    }
+
 
     public void addPost(String content, String platform, String author, String date, String type) {
         String sql = "INSERT INTO posts(content, platform, author, date, type) VALUES(?, ?, ?, ?, ?)";
@@ -85,17 +132,11 @@ public class PostManager {
 
     public void deletePost(int id) {
         String sql = "DELETE FROM posts WHERE id = ?";
+        // Используем try (), чтобы соединение закрылось само!
         try (Connection conn = DriverManager.getConnection(URL);
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
             pstmt.setInt(1, id);
-            int affectedRows = pstmt.executeUpdate();
-
-            if (affectedRows > 0) {
-                System.out.println("✅ Пост #" + id + " удален.");
-            } else {
-                JOptionPane.showMessageDialog(null, "Пост с таким ID не найден.");
-            }
+            pstmt.executeUpdate();
         } catch (SQLException e) {
             System.out.println("Delete error: " + e.getMessage());
         }

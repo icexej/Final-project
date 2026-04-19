@@ -44,7 +44,7 @@ public class Main {
             String name = userField.getText();
             String pass = new String(passField.getPassword());
             if (manager.login(name, pass)) {
-                JOptionPane.showMessageDialog(null, "Login successful! ✨");
+                JOptionPane.showMessageDialog(null, "Login successful!");
                 return true;
             }
             JOptionPane.showMessageDialog(null, "Invalid username or password.");
@@ -55,7 +55,7 @@ public class Main {
     private static void createMainWindow() {
         if (currentUser == null) return;
 
-        JFrame frame = new JFrame("🌸 Social Scheduler 2026 | User: " + currentUser.getUsername());
+        JFrame frame = new JFrame("Social Scheduler 2026 | User: " + currentUser.getUsername());
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(900, 700);
         frame.setLayout(new BorderLayout(15, 15));
@@ -88,14 +88,29 @@ public class Main {
         sidePanel.setBackground(pastelPink);
         sidePanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
+        JButton btnExport = new JButton("Export CSV");
+        styleButton(btnExport, new Color(144, 238, 144), Color.BLACK);
+        btnExport.addActionListener(e -> manager.exportToCSV());
+        sidePanel.add(btnExport);
+        sidePanel.add(Box.createVerticalStrut(10));
+
+        JButton btnImport = new JButton("Import CSV");
+        styleButton(btnImport, new Color(173, 216, 230), Color.BLACK); // Светло-голубая
+        btnImport.addActionListener(e -> {
+            manager.importFromCSV();
+            refreshDisplay();
+        });
+        sidePanel.add(btnImport);
+        sidePanel.add(Box.createVerticalStrut(10));
+
         JButton btnShow = new JButton(" Refresh List");
         JButton btnLogout = new JButton(" Logout");
         styleButton(btnShow, buttonRose, Color.BLACK);
         styleButton(btnLogout, new Color(255, 150, 150), Color.WHITE);
-
         sidePanel.add(btnShow); sidePanel.add(Box.createVerticalStrut(10));
 
-        JButton btnComment = new JButton("💬 Add Comment");
+
+        JButton btnComment = new JButton("Add Comment");
         styleButton(btnComment, buttonRose, Color.BLACK);
         btnComment.addActionListener(e -> {
             String idStr = JOptionPane.showInputDialog("Enter Post ID to comment:");
@@ -117,9 +132,17 @@ public class Main {
 
 
         if ("Admin".equals(currentUser.getRole())) {
+            // Используем массив, чтобы создать кнопки в цикле (дизайнерский подход!)
             addAdminButton(sidePanel, "Add Image Post", "Image");
             addAdminButton(sidePanel, "Add Video Post", "Video");
             addAdminButton(sidePanel, "Add Story Post", "Story");
+
+            // Кнопки редактирования и удаления
+            JButton btnEdit = new JButton("Edit Post");
+            styleButton(btnEdit, buttonRose, Color.BLACK);
+            btnEdit.addActionListener(e -> editPost());
+            sidePanel.add(btnEdit);
+            sidePanel.add(Box.createVerticalStrut(10));
 
             JButton btnDelete = new JButton("Delete Post");
             styleButton(btnDelete, new Color(255, 150, 150), Color.WHITE);
@@ -157,7 +180,7 @@ public class Main {
             for (Post p : posts) {
                 displayArea.append("🆔 ID: " + p.getId() + " | 👤 Author: " + p.getAuthor() + "\n");
                 displayArea.append("📱 Platform: " + p.getPlatform() + " | 📅 Date: " + p.getDate() + " | 📂 Type: " + p.getType() + "\n");
-                displayArea.append("📝 Text: " + p.getContent() + "\n");
+                displayArea.append(p.getFormattedContent() + "\n");
                 List<String> comments = manager.getCommentsForPost(p.getId());
                 for (String c : comments) {
                     displayArea.append(c + "\n");
@@ -167,10 +190,13 @@ public class Main {
         }
     }
 
-    // Один метод для всех типов постов вместо трех разных
     private static void createPost(String type) {
         String content = JOptionPane.showInputDialog("Enter " + type.toLowerCase() + " text:");
-        if (content == null || content.trim().isEmpty()) return;
+
+        if (content == null || content.trim().isEmpty()) {
+            JOptionPane.showMessageDialog(null, "Text cannot be empty!", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
 
         String date = askDate();
         if (date == null) return;
@@ -197,6 +223,24 @@ public class Main {
         int c = JOptionPane.showOptionDialog(null, "Выберите платформу:", "Select",
                 JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, plats, plats[0]);
         return (c >= 0) ? plats[c] : null;
+    }
+
+    private static void editPost() {
+        String idStr = JOptionPane.showInputDialog("Enter Post ID to edit:");
+        if (idStr != null && !idStr.trim().isEmpty()) {
+            try {
+                int id = Integer.parseInt(idStr);
+                String newText = JOptionPane.showInputDialog("Enter new text for the post:");
+
+                if (newText != null && !newText.trim().isEmpty()) {
+                    manager.updatePost(id, newText); // Вызов метода из PostManager
+                    JOptionPane.showMessageDialog(null, "Post #" + id + " updated! ✨");
+                    refreshDisplay(); // Обновляем ленту
+                }
+            } catch (NumberFormatException e) {
+                JOptionPane.showMessageDialog(null, "Invalid ID format. Please enter a number.");
+            }
+        }
     }
 
     private static void deletePost() {
@@ -244,7 +288,7 @@ public class Main {
                 return;
             }
             manager.registerUser(new User(userField.getText().trim(), new String(passField.getPassword()).trim(), role), secretField.getText().trim());
-            JOptionPane.showMessageDialog(null, "Account created! ✨");
+            JOptionPane.showMessageDialog(null, "Account created!");
         }
     }
 }

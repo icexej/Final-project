@@ -1,12 +1,7 @@
 public class Post {
-    private int id;
-    private String content;
-    private String platform;
-    private String author;
-    private String date; // Новое поле
-    private String type; // Новое поле
+    protected int id;
+    protected String content, platform, author, date, type;
 
-    //Constructo
     public Post(int id, String content, String platform, String author, String date, String type) {
         this.id = id;
         this.content = content;
@@ -16,11 +11,14 @@ public class Post {
         this.type = type;
     }
 
-    // Getters
+    public String getFormattedContent() {
+        return "📝 [POST] " + content;
+    }
+
     public int getId() { return id; }
     public String getContent() { return content; }
     public String getPlatform() { return platform; }
     public String getAuthor() { return author; }
-    public String getDate() { return date; } // Теперь этот метод существует!
-    public String getType() { return type; } // И этот тоже!
+    public String getDate() { return date; }
+    public String getType() { return type; }
 }
