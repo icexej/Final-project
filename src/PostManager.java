@@ -38,7 +38,7 @@ public class PostManager {
             pstmt.setString(2, user.getPassword());
             pstmt.setString(3, role);
             pstmt.executeUpdate();
-            System.out.println("User registered as " + role + "! ✨");
+            System.out.println("User registered as " + role + "!");
         } catch (SQLException e) {
             System.out.println("Registration error: " + e.getMessage());
         }
