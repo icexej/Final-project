@@ -7,13 +7,11 @@ public class SetupDatabase {
     private static final String URL = "jdbc:sqlite:social_media.db";
 
     public static void createNewDatabase() {
-        // Таблица пользователей
         String sqlUsers = "CREATE TABLE IF NOT EXISTS users (" +
                 "username TEXT PRIMARY KEY, " +
                 "password TEXT, " +
                 "role TEXT);";
 
-        // Таблица постов
         String sqlPosts = "CREATE TABLE IF NOT EXISTS posts (" +
                 "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 "content TEXT, " +
@@ -22,7 +20,6 @@ public class SetupDatabase {
                 "date TEXT, " +
                 "type TEXT);";
 
-        // --- НОВАЯ ТАБЛИЦА КОММЕНТАРИЕВ ---
         String sqlComments = "CREATE TABLE IF NOT EXISTS comments (" +
                 "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 "post_id INTEGER, " +
@@ -35,7 +32,7 @@ public class SetupDatabase {
 
             stmt.execute(sqlUsers);
             stmt.execute(sqlPosts);
-            stmt.execute(sqlComments); // Выполняем создание таблицы комментов
+            stmt.execute(sqlComments);
 
             System.out.println("База данных обновлена! Таблица комментариев готова.");
 

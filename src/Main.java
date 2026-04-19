@@ -82,7 +82,6 @@ public class Main {
                 TitledBorder.LEFT, TitledBorder.TOP, new Font("Comic Sans MS", Font.BOLD, 14), darkRose));
         frame.add(scrollPane, BorderLayout.CENTER);
 
-        // Sidebar
         JPanel sidePanel = new JPanel();
         sidePanel.setLayout(new BoxLayout(sidePanel, BoxLayout.Y_AXIS));
         sidePanel.setBackground(pastelPink);
@@ -120,7 +119,7 @@ public class Main {
                     String text = JOptionPane.showInputDialog("Your comment:");
                     if (text != null && !text.trim().isEmpty()) {
                         manager.addComment(postId, currentUser.getUsername(), text);
-                        refreshDisplay(); // Сразу обновляем ленту, чтобы увидеть коммент
+                        refreshDisplay();
                     }
                 } catch (NumberFormatException ex) {
                     JOptionPane.showMessageDialog(null, "Invalid format.");
@@ -132,12 +131,10 @@ public class Main {
 
 
         if ("Admin".equals(currentUser.getRole())) {
-            // Используем массив, чтобы создать кнопки в цикле (дизайнерский подход!)
             addAdminButton(sidePanel, "Add Image Post", "Image");
             addAdminButton(sidePanel, "Add Video Post", "Video");
             addAdminButton(sidePanel, "Add Story Post", "Story");
 
-            // Кнопки редактирования и удаления
             JButton btnEdit = new JButton("Edit Post");
             styleButton(btnEdit, buttonRose, Color.BLACK);
             btnEdit.addActionListener(e -> editPost());
@@ -162,7 +159,6 @@ public class Main {
         refreshDisplay();
     }
 
-    // Универсальный метод для кнопок админа (уменьшаем код)
     private static void addAdminButton(JPanel panel, String label, String type) {
         JButton btn = new JButton(label);
         styleButton(btn, buttonRose, Color.BLACK);

@@ -60,7 +60,6 @@ public class PostManager {
                 String date = rs.getString("date");
                 String type = rs.getString("type");
 
-                // Используем полиморфизм при создании объектов
                 if ("Video".equals(type)) posts.add(new VideoPost(id, content, platform, author, date, type));
                 else if ("Story".equals(type)) posts.add(new StoryPost(id, content, platform, author, date, type));
                 else posts.add(new ImagePost(id, content, platform, author, date, type));
@@ -69,7 +68,6 @@ public class PostManager {
         return posts;
     }
 
-    // UPDATE операция (для полного CRUD)
     public void updatePost(int id, String newContent) {
         String sql = "UPDATE posts SET content = ? WHERE id = ?";
         try (Connection conn = DriverManager.getConnection(URL);
@@ -96,12 +94,11 @@ public class PostManager {
     public void importFromCSV() {
         String line;
         try (java.io.BufferedReader br = new java.io.BufferedReader(new java.io.FileReader("social_data_export.csv"))) {
-            br.readLine(); // Пропускаем заголовок (ID, Type...)
+            br.readLine();
             int count = 0;
             while ((line = br.readLine()) != null) {
                 String[] data = line.split(",");
                 if (data.length >= 6) {
-                    // data[5] - контент, data[3] - платформа, data[2] - автор, data[4] - дата, data[1] - тип
                     addPost(data[5], data[3], data[2], data[4], data[1]);
                     count++;
                 }
