@@ -72,3 +72,8 @@ Challenges: One of the main tasks was to synchronize the ID between the database
 ### 6. Database2
 ![CSV Export](screenshots/database2.png)
 
+
+## 🔗 Project Links
+* **Presentation:** [Canva Presentation Link](https://canva.link/gun4346bq7l57qp)
+* **GitHub Repository:** [Link to this Repo](https://github.com/icexej/Final-project.git)
+
