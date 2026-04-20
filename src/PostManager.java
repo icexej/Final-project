@@ -8,7 +8,6 @@ import java.util.List;
 public class PostManager {
     private final String URL = "jdbc:sqlite:social_media.db";
 
-    // --- АВТОРИЗАЦИЯ И РЕГИСТРАЦИЯ ---
     public boolean login(String username, String password) {
         String sql = "SELECT * FROM users WHERE username = ? AND password = ?";
         try (Connection conn = DriverManager.getConnection(URL);
@@ -129,7 +128,6 @@ public class PostManager {
 
     public void deletePost(int id) {
         String sql = "DELETE FROM posts WHERE id = ?";
-        // Используем try (), чтобы соединение закрылось само!
         try (Connection conn = DriverManager.getConnection(URL);
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, id);

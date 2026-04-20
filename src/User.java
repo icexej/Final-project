@@ -3,7 +3,6 @@ public class User {
     private String password;
     private String role; // "ADMIN" orr "USER"
 
-    // Конструктор
     public User(String username, String password, String role) {
         this.username = username;
         this.password = password;
