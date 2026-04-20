@@ -229,9 +229,9 @@ public class Main {
                 String newText = JOptionPane.showInputDialog("Enter new text for the post:");
 
                 if (newText != null && !newText.trim().isEmpty()) {
-                    manager.updatePost(id, newText); // Вызов метода из PostManager
+                    manager.updatePost(id, newText);
                     JOptionPane.showMessageDialog(null, "Post #" + id + " updated! ✨");
-                    refreshDisplay(); // Обновляем ленту
+                    refreshDisplay();
                 }
             } catch (NumberFormatException e) {
                 JOptionPane.showMessageDialog(null, "Invalid ID format. Please enter a number.");
